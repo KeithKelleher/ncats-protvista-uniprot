@@ -184,7 +184,9 @@ class ProtvistaUniprot extends LitElement {
         }
         await load(dynSourceURL).then((res) => {
           if (res && res.payload && res.payload.length > 0) {
-            this.config.categories.unshift(...res.payload);
+            this.config.categories.unshift(...res.payload.map(r => {
+              return {...r, dynamic:true}
+            }));
           }
         }).catch(err => {
           console.log(err);
@@ -440,6 +442,20 @@ class ProtvistaUniprot extends LitElement {
     return this;
   }
 
+  categoryLabel(category) {
+    if (category.dynamic) {
+      return "category-label dynamic-category-label";
+    }
+    return "category-label";
+  }
+
+  trackLabel(category) {
+    if (category.dynamic) {
+      return "track-label dynamic-track-label";
+    }
+    return "track-label";
+  }
+
   render() {
     // Component isn't ready
     if (!this.sequence || !this.config || this.suspend) {
@@ -485,7 +501,7 @@ class ProtvistaUniprot extends LitElement {
             html`
               <div class="category" id="category_${category.name}">
                 <div
-                  class="category-label"
+                  class="${this.categoryLabel(category)}"
                   data-category-toggle="${category.name}"
                   @click="${this.handleCategoryClick}"
                 >
@@ -520,7 +536,7 @@ class ProtvistaUniprot extends LitElement {
                       Object.keys(trackData).length)
                     ? html`
                         <div class="category__track" id="track_${track.name}">
-                          <div class="track-label" title="${track.tooltip}">
+                          <div class="${this.trackLabel(category)}" title="${track.tooltip}">
                             ${track.filterComponent
                               ? this.getFilterComponent(
                                   `${category.name}-${track.name}`
@@ -555,7 +571,7 @@ class ProtvistaUniprot extends LitElement {
                             class="category__track"
                             id="track_${item.accession}"
                           >
-                            <div class="track-label" title="${item.accession}">
+                            <div class="${this.trackLabel(category)}" title="${item.accession}">
                               ${item.accession}
                             </div>
                             Fuck
