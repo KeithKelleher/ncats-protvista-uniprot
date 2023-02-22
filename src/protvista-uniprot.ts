@@ -104,6 +104,7 @@ export type DownloadConfig = {
 type ProtvistaConfig = {
   categories: ProtvistaCategory[];
   download: DownloadConfig;
+  dynamicsource: {name: string, url: string, devurl: string, localurl: string};
 };
 
 class ProtvistaUniprot extends LitElement {
@@ -117,6 +118,7 @@ class ProtvistaUniprot extends LitElement {
   private displayCoordinates: { start?: number; end?: number } = {};
   private suspend?: boolean;
   private accession?: string;
+  private dynamicSource?: "dev"|"prod"|"local";
   private sequence?: string;
   private config?: ProtvistaConfig;
 
@@ -137,6 +139,7 @@ class ProtvistaUniprot extends LitElement {
     return {
       suspend: { type: Boolean, reflect: true },
       accession: { type: String, reflect: true },
+      dynamicSource: {type: String, reflect: true},
       sequence: { type: String },
       data: { type: Object },
       openCategories: { type: Array },
@@ -172,6 +175,21 @@ class ProtvistaUniprot extends LitElement {
   async _loadData() {
     const accession = this.accession;
     if (accession && this.config) {
+      if (this.config.dynamicsource) {
+        let dynSourceURL = this.config.dynamicsource.url;
+        if (this.dynamicSource == 'dev') {
+          dynSourceURL = this.config.dynamicsource.devurl;
+        } else if (this.dynamicSource == 'local') {
+          dynSourceURL = this.config.dynamicsource.localurl;
+        }
+        await load(dynSourceURL).then((res) => {
+          if (res && res.payload && res.payload.length > 0) {
+            this.config.categories.unshift(...res.payload);
+          }
+        }).catch(err => {
+          console.log(err);
+        });
+      }
       // Get the list of unique urls
       const urls = this.config.categories
         .map(({ tracks }) => tracks.map(({ data }) => data[0].url))
@@ -216,7 +234,7 @@ class ProtvistaUniprot extends LitElement {
                 return;
               }
               // 1. Convert data
-              const transformedData = adapter
+              const transformedData = (adapter && adapters[adapter])
                 ? adapters[adapter](trackData)
                 : trackData;
 
