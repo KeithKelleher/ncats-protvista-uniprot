@@ -41,7 +41,7 @@ export default css`
   }
 
   .dynamic-category-label {
-    background-color: #5c665b;
+    background-color: #1c511a;
   }
   
   .category-label::before {
