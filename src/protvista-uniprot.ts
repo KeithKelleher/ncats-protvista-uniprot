@@ -12,6 +12,9 @@ import ProtvistaVariationGraph from 'protvista-variation-graph';
 import ProtvistaFilter from 'protvista-filter';
 import ProtvistaManager from 'protvista-manager';
 import NcatsSequenceLogo from './models/ncats-sequence-logo';
+import NcatsBargraph from './models/ncats-bargraph';
+import NcatsLollipop from './models/ncats-lollipop';
+
 import * as d3 from 'd3';
 
 import { load } from 'data-loader';
@@ -63,7 +66,9 @@ type TrackType =
   | 'protvista-variation-graph'
   | 'protvista-interpro-track'
   | 'ncats-sequence-logo'
-  | 'ncats-ortholog-variants';
+  | 'ncats-ortholog-variants'
+  | 'ncats-bargraph' | 'ncats-bargraph-large'
+  | 'ncats-lollipop' | 'ncats-lollipop-large';
 
 type ProtvistaTrackConfig = {
   name: string;
@@ -170,6 +175,8 @@ class ProtvistaUniprot extends LitElement {
     loadComponent('protvista-manager', ProtvistaManager);
     loadComponent('protvista-uniprot-structure', _ProtvistaUniprotStructure);
     loadComponent('ncats-sequence-logo', NcatsSequenceLogo);
+    loadComponent('ncats-bargraph', NcatsBargraph);
+    loadComponent('ncats-lollipop', NcatsLollipop);
   }
 
   async _loadData() {
@@ -736,6 +743,34 @@ class ProtvistaUniprot extends LitElement {
             displayend="${this.displayCoordinates?.end}"
             id="track-${id}"
         ></ncats-sequence-logo>`;
+      case 'ncats-bargraph':
+        return html`
+          <ncats-bargraph length="${this.sequence?.length}"
+                          displaystart="${this.displayCoordinates?.start}"
+                          displayend="${this.displayCoordinates?.end}"
+                          id="track-${id}"
+          ></ncats-bargraph>`;
+      case 'ncats-bargraph-large':
+        return html`
+          <ncats-bargraph height="120" length="${this.sequence?.length}"
+                          displaystart="${this.displayCoordinates?.start}"
+                          displayend="${this.displayCoordinates?.end}"
+                          id="track-${id}"
+          ></ncats-bargraph>`;
+      case 'ncats-lollipop':
+        return html`
+          <ncats-lollipop length="${this.sequence?.length}"
+                          displaystart="${this.displayCoordinates?.start}"
+                          displayend="${this.displayCoordinates?.end}"
+                          id="track-${id}"
+          ></ncats-lollipop>`;
+      case 'ncats-lollipop-large':
+        return html`
+        <ncats-lollipop height="120" length="${this.sequence?.length}"
+            displaystart="${this.displayCoordinates?.start}"
+            displayend="${this.displayCoordinates?.end}"
+            id="track-${id}"
+        ></ncats-lollipop>`;
       default:
         console.warn('No Matching ProtvistaTrack Found.');
         break;
