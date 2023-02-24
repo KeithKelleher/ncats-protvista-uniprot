@@ -160,13 +160,13 @@ class NcatsBargraph extends ProtvistaZoomable {
             this.y_axis_g.select(".domain").style("display", "none");
 
             this.bars = this.data_bg
-                .selectAll("rect.bar")
+                .selectAll("rect.seqbar")
                 .data(data, (d) => d.start);
 
             this.bars
                 .enter()
                 .append("rect")
-                .attr("class", "bar feature")
+                .attr("class", "seqbar feature")
                 .attr("height", (d) => this.yScale(Math.abs(d.score)))
                 .merge(this.bars)
                 .attr("width", ftWidth)
