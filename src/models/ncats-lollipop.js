@@ -78,12 +78,12 @@ class NcatsLollipop extends ProtvistaZoomable {
     }
 
     set data(data) {
-        console.log('setting data');
-        console.log(data);
         if (data && data.hasOwnProperty('values')) {
             this.setResultObject([data]);
         }
-        this.setResultObject(data);
+        else if (data && data.length > 0) {
+            this.setResultObject(data);
+        }
     }
 
     _createDataList() {

@@ -24,7 +24,7 @@ class NcatsBargraph extends ProtvistaZoomable {
                 }
 
                 tooltip.title = `Residue ${e.detail.feature?.start}`;
-                tooltip.innerHTML = `${e.detail.feature.aa}: ${e.detail.feature.score}`;
+                tooltip.innerHTML = `Score: ${e.detail.feature.value || e.detail.feature.score}`;
 
                 tooltip.visible = true;
 
@@ -81,7 +81,9 @@ class NcatsBargraph extends ProtvistaZoomable {
         if (data && data.hasOwnProperty('values')) {
             this.setResultObject([data]);
         }
-        this.setResultObject(data);
+        else if (data && data.length > 0) {
+            this.setResultObject(data);
+        }
     }
 
     _createDataList() {
@@ -167,13 +169,13 @@ class NcatsBargraph extends ProtvistaZoomable {
                 .enter()
                 .append("rect")
                 .attr("class", "seqbar feature")
-                .attr("height", (d) => this.yScale(Math.abs(d.score)))
+                .attr("height", (d) => this.yScale(Math.abs(d.value || d.score)))
                 .merge(this.bars)
                 .attr("width", ftWidth)
                 .attr("x", (d) => this.getXFromSeqPosition(d.start))
                 .attr("y", d => {
-                    if (d.score < 0) { return this.yOffset }
-                    return this.yOffset - this.yScale(Math.abs(d.score));
+                    if ((d.value || d.score) < 0) { return this.yOffset }
+                    return this.yOffset - this.yScale(Math.abs(d.value || d.score));
                 })
                 .attr("fill", d => d.color)
                 .call(this.bindEvents, this);
