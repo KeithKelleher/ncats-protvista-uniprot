@@ -123,15 +123,9 @@ class NcatsBargraph extends ProtvistaZoomable {
         return 0.75 * this._height;
     }
     get yMin() {
-        if (this.resultObj.max > 0 && this.resultObj.min > 0) {
-            return 0.35;
-        }
         return this.resultObj.min;
     }
     get yMax() {
-        if (this.resultObj.max < 0 && this.resultObj.min < 0) {
-            return 0;
-        }
         return this.resultObj.max;
     }
     get yScale() {

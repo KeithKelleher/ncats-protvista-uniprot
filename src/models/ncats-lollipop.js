@@ -147,7 +147,7 @@ class NcatsLollipop extends ProtvistaZoomable {
     }
 
     refresh() {
-        if (this.x_axis_g && this.resultObj) {
+        if (this.x_axis_g && this.resultObj && this.resultObj.values?.length > 0) {
             const ftWidth = this.getSingleBaseWidth();
             const data = this.resultObj.values.map((s) => {
                 return {...s, start: s.residue, end: s.residue};
