@@ -99,6 +99,7 @@ type ProtvistaCategory = {
   tracks: ProtvistaTrackConfig[];
   color?: string;
   shape?: string; //TODO: eventually replace with list
+  dynamic?: boolean;
 };
 
 export type DownloadConfig = {
@@ -189,6 +190,7 @@ class ProtvistaUniprot extends LitElement {
         } else if (this.dynamicSource == 'local') {
           dynSourceURL = this.config.dynamicsource.localurl;
         }
+        this.config.categories = this.config.categories.filter(r => !r.dynamic);
         await load(dynSourceURL).then((res) => {
           if (res && res.payload && res.payload.length > 0) {
             this.config.categories.unshift(...res.payload.map(r => {
