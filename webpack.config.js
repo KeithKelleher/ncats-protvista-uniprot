@@ -17,7 +17,7 @@ const config = {
   target: 'web',
   devtool: 'source-map',
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.css'],
   },
   externals: {
     d3: 'd3',
