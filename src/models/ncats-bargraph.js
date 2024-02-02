@@ -78,7 +78,7 @@ class NcatsBargraph extends ProtvistaZoomable {
     }
 
     set data(data) {
-        if (data && data.hasOwnProperty('values')) {
+        if (data && Object.prototype.hasOwnProperty.call(data, 'values')) {
             this.setResultObject([data]);
         }
         else if (data && data.length > 0) {

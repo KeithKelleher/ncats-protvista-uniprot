@@ -639,7 +639,7 @@ class ProtvistaUniprot extends LitElement {
       return;
     }
 
-    let pos = d3.select('#protvista-manager-obj').node().getBoundingClientRect();
+    const pos = d3.select('#protvista-manager-obj').node().getBoundingClientRect();
 
     tooltip.title = `${d.type} ${d.start}-${d.end}`;
     tooltip.innerHTML = d.tooltipContent;
