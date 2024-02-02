@@ -12,6 +12,9 @@ import ProtvistaVariationGraph from 'protvista-variation-graph';
 import ProtvistaFilter from 'protvista-filter';
 import ProtvistaManager from 'protvista-manager';
 import NcatsSequenceLogo from './models/ncats-sequence-logo';
+import NcatsBargraph from './models/ncats-bargraph';
+import NcatsLollipop from './models/ncats-lollipop';
+
 import * as d3 from 'd3';
 
 import { load } from 'data-loader';
@@ -63,7 +66,9 @@ type TrackType =
   | 'protvista-variation-graph'
   | 'protvista-interpro-track'
   | 'ncats-sequence-logo'
-  | 'ncats-ortholog-variants';
+  | 'ncats-ortholog-variants'
+  | 'ncats-bargraph' | 'ncats-bargraph-large'
+  | 'ncats-lollipop' | 'ncats-lollipop-large';
 
 type ProtvistaTrackConfig = {
   name: string;
@@ -94,6 +99,7 @@ type ProtvistaCategory = {
   tracks: ProtvistaTrackConfig[];
   color?: string;
   shape?: string; //TODO: eventually replace with list
+  dynamic?: boolean;
 };
 
 export type DownloadConfig = {
@@ -104,6 +110,7 @@ export type DownloadConfig = {
 type ProtvistaConfig = {
   categories: ProtvistaCategory[];
   download: DownloadConfig;
+  dynamicsource: {name: string, url: string, devurl: string, localurl: string};
 };
 
 class ProtvistaUniprot extends LitElement {
@@ -117,6 +124,7 @@ class ProtvistaUniprot extends LitElement {
   private displayCoordinates: { start?: number; end?: number } = {};
   private suspend?: boolean;
   private accession?: string;
+  private dynamicSource?: "dev"|"prod"|"local";
   private sequence?: string;
   private config?: ProtvistaConfig;
 
@@ -137,6 +145,7 @@ class ProtvistaUniprot extends LitElement {
     return {
       suspend: { type: Boolean, reflect: true },
       accession: { type: String, reflect: true },
+      dynamicSource: {type: String, reflect: true},
       sequence: { type: String },
       data: { type: Object },
       openCategories: { type: Array },
@@ -167,11 +176,31 @@ class ProtvistaUniprot extends LitElement {
     loadComponent('protvista-manager', ProtvistaManager);
     loadComponent('protvista-uniprot-structure', _ProtvistaUniprotStructure);
     loadComponent('ncats-sequence-logo', NcatsSequenceLogo);
+    loadComponent('ncats-bargraph', NcatsBargraph);
+    loadComponent('ncats-lollipop', NcatsLollipop);
   }
 
   async _loadData() {
     const accession = this.accession;
     if (accession && this.config) {
+      if (this.config.dynamicsource) {
+        let dynSourceURL = this.config.dynamicsource.url;
+        if (this.dynamicSource == 'dev') {
+          dynSourceURL = this.config.dynamicsource.devurl;
+        } else if (this.dynamicSource == 'local') {
+          dynSourceURL = this.config.dynamicsource.localurl;
+        }
+        this.config.categories = this.config.categories.filter(r => !r.dynamic);
+        await load(dynSourceURL).then((res) => {
+          if (res && res.payload && res.payload.length > 0) {
+            this.config.categories.unshift(...res.payload.map(r => {
+              return {...r, dynamic:true}
+            }));
+          }
+        }).catch(err => {
+          console.log(err);
+        });
+      }
       // Get the list of unique urls
       const urls = this.config.categories
         .map(({ tracks }) => tracks.map(({ data }) => data[0].url))
@@ -216,7 +245,7 @@ class ProtvistaUniprot extends LitElement {
                 return;
               }
               // 1. Convert data
-              const transformedData = adapter
+              const transformedData = (adapter && adapters[adapter])
                 ? adapters[adapter](trackData)
                 : trackData;
 
@@ -422,6 +451,20 @@ class ProtvistaUniprot extends LitElement {
     return this;
   }
 
+  categoryLabel(category) {
+    if (category.dynamic) {
+      return "category-label dynamic-category-label";
+    }
+    return "category-label";
+  }
+
+  trackLabel(category) {
+    if (category.dynamic) {
+      return "track-label dynamic-track-label";
+    }
+    return "track-label";
+  }
+
   render() {
     // Component isn't ready
     if (!this.sequence || !this.config || this.suspend) {
@@ -467,7 +510,7 @@ class ProtvistaUniprot extends LitElement {
             html`
               <div class="category" id="category_${category.name}">
                 <div
-                  class="category-label"
+                  class="${this.categoryLabel(category)}"
                   data-category-toggle="${category.name}"
                   @click="${this.handleCategoryClick}"
                 >
@@ -502,7 +545,7 @@ class ProtvistaUniprot extends LitElement {
                       Object.keys(trackData).length)
                     ? html`
                         <div class="category__track" id="track_${track.name}">
-                          <div class="track-label" title="${track.tooltip}">
+                          <div class="${this.trackLabel(category)}" title="${track.tooltip}">
                             ${track.filterComponent
                               ? this.getFilterComponent(
                                   `${category.name}-${track.name}`
@@ -537,7 +580,7 @@ class ProtvistaUniprot extends LitElement {
                             class="category__track"
                             id="track_${item.accession}"
                           >
-                            <div class="track-label" title="${item.accession}">
+                            <div class="${this.trackLabel(category)}" title="${item.accession}">
                               ${item.accession}
                             </div>
                             Fuck
@@ -702,6 +745,34 @@ class ProtvistaUniprot extends LitElement {
             displayend="${this.displayCoordinates?.end}"
             id="track-${id}"
         ></ncats-sequence-logo>`;
+      case 'ncats-bargraph':
+        return html`
+          <ncats-bargraph length="${this.sequence?.length}"
+                          displaystart="${this.displayCoordinates?.start}"
+                          displayend="${this.displayCoordinates?.end}"
+                          id="track-${id}"
+          ></ncats-bargraph>`;
+      case 'ncats-bargraph-large':
+        return html`
+          <ncats-bargraph height="120" length="${this.sequence?.length}"
+                          displaystart="${this.displayCoordinates?.start}"
+                          displayend="${this.displayCoordinates?.end}"
+                          id="track-${id}"
+          ></ncats-bargraph>`;
+      case 'ncats-lollipop':
+        return html`
+          <ncats-lollipop length="${this.sequence?.length}"
+                          displaystart="${this.displayCoordinates?.start}"
+                          displayend="${this.displayCoordinates?.end}"
+                          id="track-${id}"
+          ></ncats-lollipop>`;
+      case 'ncats-lollipop-large':
+        return html`
+        <ncats-lollipop height="120" length="${this.sequence?.length}"
+            displaystart="${this.displayCoordinates?.start}"
+            displayend="${this.displayCoordinates?.end}"
+            id="track-${id}"
+        ></ncats-lollipop>`;
       default:
         console.warn('No Matching ProtvistaTrack Found.');
         break;

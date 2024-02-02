@@ -40,6 +40,10 @@ export default css`
     cursor: pointer;
   }
 
+  .dynamic-category-label {
+    background-color: #1c511a;
+  }
+  
   .category-label::before {
     content: ' ';
     display: inline-block;
@@ -68,6 +72,10 @@ export default css`
 
   .track-label {
     background-color: #bdc3ca;
+  }
+  
+  .dynamic-track-label {
+    background-color: #daf3d9;
   }
 
   .track-instructions {    
